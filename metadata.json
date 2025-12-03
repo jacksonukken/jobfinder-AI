@@ -1,0 +1,5 @@
+{
+  "name": "AI JobFinder",
+  "description": "An intelligent job search platform powered by Gemini to find opportunities and generate tailored cover letters.",
+  "requestFramePermissions": []
+}
