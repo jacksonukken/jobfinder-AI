@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Wand2, Send, FileText, Loader2, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Wand2, Send, FileText, Loader2, CheckCircle, UploadCloud } from 'lucide-react';
 import { Job, UserProfile } from '../types';
 import { generateCoverLetter } from '../services/gemini';
 
@@ -113,6 +113,23 @@ const Apply: React.FC<ApplyProps> = ({ job, onBack, onSubmitSuccess }) => {
                   />
                 </div>
               </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Resume / CV</label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-lg hover:border-indigo-400 transition-colors cursor-pointer bg-slate-50 group">
+                  <div className="space-y-1 text-center">
+                    <UploadCloud className="mx-auto h-12 w-12 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                    <div className="flex text-sm text-slate-600 justify-center">
+                      <span className="relative font-medium text-indigo-600 hover:text-indigo-500">
+                        Upload a file
+                      </span>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-slate-500">PDF, DOCX up to 10MB</p>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Key Skills</label>
                 <input

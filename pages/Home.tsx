@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Sparkles, Briefcase } from 'lucide-react';
+import { Search, MapPin, Sparkles, Briefcase, AlertCircle } from 'lucide-react';
 import { Job, SearchFilters } from '../types';
 import JobCard from '../components/JobCard';
 import { searchJobsWithGemini } from '../services/gemini';
@@ -106,9 +106,23 @@ const Home: React.FC<HomeProps> = ({ onJobSelect }) => {
                 </div>
               ) : (
                 <div className="text-center py-20">
-                  <Briefcase className="mx-auto h-12 w-12 text-slate-300" />
-                  <h3 className="mt-2 text-sm font-semibold text-slate-900">No jobs found</h3>
-                  <p className="mt-1 text-sm text-slate-500">Try adjusting your search terms or location.</p>
+                  {query || location ? (
+                    <>
+                      <Briefcase className="mx-auto h-12 w-12 text-slate-300" />
+                      <h3 className="mt-2 text-sm font-semibold text-slate-900">No jobs found</h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                         We couldn't find any matches for your search. Try adjusting your keywords.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="mx-auto h-12 w-12 text-amber-400" />
+                      <h3 className="mt-2 text-sm font-semibold text-slate-900">Unable to load jobs</h3>
+                      <p className="mt-1 text-sm text-slate-500 max-w-md mx-auto">
+                        There might be an issue connecting to the AI service. Please ensure your API key is configured correctly.
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </>
