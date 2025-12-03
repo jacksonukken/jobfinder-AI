@@ -1,14 +1,41 @@
-import React, { useState } from 'react';
-import { HashRouter } from 'react-router-dom'; // Using HashRouter merely as a provider if needed, but manual state is simpler for this flow
+import React, { useState, useEffect } from 'react';
+import { User } from 'firebase/auth';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import JobDetail from './pages/JobDetail';
 import Apply from './pages/Apply';
 import { Job } from './types';
+import { auth, signInWithGoogle, logout } from './services/firebase';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'detail' | 'apply'>('home');
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Listen for authentication state changes
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error("Login failed", error);
+      alert("Login failed. Please try again.");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
 
   const handleJobSelect = (job: Job) => {
     setSelectedJob(job);
@@ -44,7 +71,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      <Navbar onNavigate={handleNavigate} currentPage={currentPage} />
+      <Navbar 
+        onNavigate={handleNavigate} 
+        currentPage={currentPage} 
+        user={user}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+      />
       
       <main className="animate-in fade-in duration-300">
         {currentPage === 'home' && (
@@ -64,6 +97,7 @@ function App() {
             job={selectedJob} 
             onBack={handleBack}
             onSubmitSuccess={handleSubmitSuccess}
+            user={user}
           />
         )}
       </main>

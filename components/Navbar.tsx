@@ -1,12 +1,16 @@
 import React from 'react';
-import { Briefcase, Search, User } from 'lucide-react';
+import { Briefcase, User as UserIcon, LogOut } from 'lucide-react';
+import { User } from 'firebase/auth';
 
 interface NavbarProps {
   onNavigate: (page: string) => void;
   currentPage: string;
+  user: User | null;
+  onLogin: () => void;
+  onLogout: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
+const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage, user, onLogin, onLogout }) => {
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,9 +28,42 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
             >
               Find Jobs
             </button>
-            <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
-              <User size={20} />
-            </div>
+            
+            {user ? (
+              <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
+                <div className="flex items-center gap-2">
+                  {user.photoURL ? (
+                    <img 
+                      src={user.photoURL} 
+                      alt={user.displayName || "User"} 
+                      className="h-8 w-8 rounded-full border border-slate-200"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                      <UserIcon size={18} />
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-slate-700 hidden sm:block">
+                    {user.displayName?.split(' ')[0]}
+                  </span>
+                </div>
+                <button 
+                  onClick={onLogout}
+                  className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                  title="Sign Out"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={onLogin}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <UserIcon size={16} />
+                Sign In
+              </button>
+            )}
           </div>
         </div>
       </div>

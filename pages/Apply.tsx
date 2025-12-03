@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Wand2, Send, FileText, Loader2, CheckCircle, UploadCloud } from 'lucide-react';
 import { Job, UserProfile } from '../types';
 import { generateCoverLetter } from '../services/gemini';
+import { User } from 'firebase/auth';
 
 interface ApplyProps {
   job: Job;
   onBack: () => void;
   onSubmitSuccess: () => void;
+  user: User | null;
 }
 
-const Apply: React.FC<ApplyProps> = ({ job, onBack, onSubmitSuccess }) => {
+const Apply: React.FC<ApplyProps> = ({ job, onBack, onSubmitSuccess, user }) => {
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -20,6 +22,17 @@ const Apply: React.FC<ApplyProps> = ({ job, onBack, onSubmitSuccess }) => {
     experience: '',
     skills: ''
   });
+
+  // Auto-fill from user profile
+  useEffect(() => {
+    if (user) {
+      setProfile(prev => ({
+        ...prev,
+        name: user.displayName || prev.name,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
 
   const [coverLetter, setCoverLetter] = useState('');
 
