@@ -10,7 +10,6 @@ const jobSchema: Schema = {
   items: {
     type: Type.OBJECT,
     properties: {
-      id: { type: Type.STRING },
       title: { type: Type.STRING },
       company: { type: Type.STRING },
       location: { type: Type.STRING },
@@ -24,7 +23,7 @@ const jobSchema: Schema = {
       postedAt: { type: Type.STRING },
       isRemote: { type: Type.BOOLEAN },
     },
-    required: ['id', 'title', 'company', 'location', 'type', 'salaryRange', 'description', 'requirements', 'postedAt', 'isRemote']
+    required: ['title', 'company', 'location', 'type', 'salaryRange', 'description', 'requirements', 'postedAt', 'isRemote']
   }
 };
 
@@ -56,12 +55,19 @@ export const searchJobsWithGemini = async (query: string, location: string): Pro
     const text = response.text;
     if (!text) return [];
     
-    const jobs = JSON.parse(text) as Job[];
-    // Add random images for visual appeal
-    return jobs.map((job, index) => ({
-      ...job,
-      logoUrl: `https://picsum.photos/seed/${job.company.replace(/\s/g, '')}${index}/100/100`
-    }));
+    const rawJobs = JSON.parse(text) as Omit<Job, 'id' | 'logoUrl'>[];
+    
+    // Process jobs: Add unique IDs and images
+    return rawJobs.map((job, index) => {
+      // Create a deterministic but unique-enough ID for this session
+      const uniqueId = `job-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      return {
+        ...job,
+        id: uniqueId,
+        logoUrl: `https://picsum.photos/seed/${job.company.replace(/\s/g, '')}${index}/100/100`
+      };
+    });
 
   } catch (error) {
     console.error("Gemini Search Error:", error);

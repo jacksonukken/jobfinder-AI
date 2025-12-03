@@ -3,6 +3,7 @@ import { ArrowLeft, Wand2, Send, FileText, Loader2, CheckCircle, UploadCloud } f
 import { Job, UserProfile } from '../types';
 import { generateCoverLetter } from '../services/gemini';
 import { User } from 'firebase/auth';
+import { saveJob, createApplication } from '../services/firebase';
 
 interface ApplyProps {
   job: Job;
@@ -47,14 +48,27 @@ const Apply: React.FC<ApplyProps> = ({ job, onBack, onSubmitSuccess, user }) => 
     setGenerating(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      // 1. Ensure the job exists in the "jobs" collection
+      await saveJob(job);
+
+      // 2. Create the application in the "applications" collection
+      // If user is not logged in, we use 'guest' as ID or handling logic could be stricter
+      const userId = user ? user.uid : 'guest_' + Date.now();
+      
+      await createApplication(userId, job.id, profile, coverLetter);
+
       setLoading(false);
       setStep(2);
-    }, 1500);
+    } catch (error) {
+      console.error("Application failed", error);
+      alert("Failed to submit application. Please try again.");
+      setLoading(false);
+    }
   };
 
   if (step === 2) {

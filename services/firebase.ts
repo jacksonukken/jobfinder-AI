@@ -1,6 +1,15 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, type User } from "firebase/auth";
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  addDoc, 
+  collection, 
+  serverTimestamp 
+} from "firebase/firestore";
+import { Job, UserProfile } from "../types";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -17,6 +26,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 export const signInWithGoogle = async (): Promise<User> => {
@@ -31,4 +41,61 @@ export const signInWithGoogle = async (): Promise<User> => {
 
 export const logout = () => signOut(auth);
 
-export { app, analytics, auth };
+// --- Firestore Operations ---
+
+// Save or update user profile in 'users' collection
+export const saveUser = async (user: User) => {
+  try {
+    const userRef = doc(db, "users", user.uid);
+    await setDoc(userRef, {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      lastLogin: serverTimestamp(),
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error saving user:", error);
+  }
+};
+
+// Save job details to 'jobs' collection (idempotent)
+export const saveJob = async (job: Job) => {
+  try {
+    const jobRef = doc(db, "jobs", job.id);
+    // Use merge: true so we don't overwrite if it exists, but update if changed
+    await setDoc(jobRef, {
+      ...job,
+      savedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error saving job:", error);
+  }
+};
+
+// Create a new application document in 'applications' collection
+export const createApplication = async (
+  userId: string, 
+  jobId: string, 
+  profile: UserProfile, 
+  coverLetter: string
+) => {
+  try {
+    await addDoc(collection(db, "applications"), {
+      userId,
+      jobId,
+      applicantName: profile.name,
+      applicantEmail: profile.email,
+      skills: profile.skills,
+      experience: profile.experience,
+      coverLetter,
+      status: 'pending',
+      appliedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error creating application:", error);
+    throw error;
+  }
+};
+
+export { app, analytics, auth, db };

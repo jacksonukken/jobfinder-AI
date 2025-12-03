@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import JobDetail from './pages/JobDetail';
 import Apply from './pages/Apply';
 import { Job } from './types';
-import { auth, signInWithGoogle, logout } from './services/firebase';
+import { auth, signInWithGoogle, logout, saveUser } from './services/firebase';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'detail' | 'apply'>('home');
@@ -14,8 +14,12 @@ function App() {
 
   useEffect(() => {
     // Listen for authentication state changes
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        // Save user to Firestore when they log in
+        await saveUser(currentUser);
+      }
     });
     return () => unsubscribe();
   }, []);
